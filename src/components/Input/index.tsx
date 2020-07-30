@@ -13,7 +13,7 @@ import { Container, Error } from './styles';
 
 interface InpitProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
-  icon: React.ComponentType<IconBaseProps>;
+  icon?: React.ComponentType<IconBaseProps>;
 }
 
 const Input: React.FC<InpitProps> = ({ name, icon: Icon, ...rest }) => {
