@@ -1,89 +1,91 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { FaSearch } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import UsersRepository from '../../students/users/fakes/FakeUsersRepository';
+import { User } from '../../students/users/IUsersRepository';
 
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import Header from '../../components/Header';
-import Card, { CardProps } from '../../components/Card';
 
-import { Container, Content } from './styles';
+import { Container, Content, Title, TableContainer } from './styles';
 
 const Students: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
-  const [studentsData, setStudentsData] = useState<CardProps[]>([]);
+  const [students, setStudents] = useState<User | undefined>();
+  const [allStudentsArray, setAllStudentsArray] = useState<User[] | undefined>(
+    [],
+  );
+  const usersRepository = new UsersRepository();
 
-  const handleSubmit = useCallback(() => {
-    setStudentsData([
-      {
-        name: 'Anderson',
-        code: '123asd',
-        cpf: '123.456.789-12',
-        birth: '12/34/5678',
-        gender: 'Male',
-        email: 'anderson@anderson.com',
-        phone: '(12)3.4567-8910',
-      },
-    ]);
-  }, []);
+  useEffect(() => {
+    async function loadStudents(): Promise<void> {
+      const allStudents = await usersRepository.getAll();
+
+      setAllStudentsArray(allStudents);
+    }
+
+    loadStudents();
+  }, [usersRepository, students]);
+
+  const handleFindStudent = useCallback(
+    async (finder: string) => {
+      const student = await usersRepository.findStudent(finder);
+
+      console.log(student);
+      setStudents(student);
+    },
+    [usersRepository],
+  );
 
   return (
     <Container>
       <Header />
       <Content>
-        <Form ref={formRef} onSubmit={handleSubmit} id="search">
-          <h1>Pesquisar</h1>
-
+        <Title>Pesquisar Aluno</Title>
+        <Form ref={formRef} onSubmit={handleFindStudent} id="search">
           <Input
-            name="email"
+            name="finder"
             icon={FaSearch}
             placeholder="Nome, Código ou CPF"
           />
 
           <Button type="submit">Buscar aluno</Button>
         </Form>
-        {studentsData.map(student => (
-          <Form
-            ref={formRef}
-            onSubmit={handleSubmit}
-            key={student.cpf}
-            id="result"
-          >
-            <h4>Nome:</h4>
-            <Input name="name" defaultValue={student.name} />
-
-            <h4>Código:</h4>
-            <Input name="code" defaultValue={student.code} />
-
-            <h4>CPF:</h4>
-            <Input name="cpf" defaultValue={student.cpf} />
-
-            <h4>Data de nascimento</h4>
-            <Input name="picture" defaultValue={student.birth} />
-
-            <h4>Gênero</h4>
-            <Input name="picture" defaultValue={student.gender} />
-
-            <h4>E-mail</h4>
-            <Input name="picture" defaultValue={student.email} />
-
-            <h4>Telefone</h4>
-            <Input name="picture" defaultValue={student.phone} />
-
-            <Button type="submit">Salvar</Button>
-
-            <Button
-              type="button"
-              // onClick={() => handleDeletestudent(country.id)}
-            >
-              Excluir
-            </Button>
-            <Link to="/dashboard">Cancelar</Link>
-          </Form>
-        ))}
       </Content>
+
+      <Title>Alunos Cadastrados</Title>
+
+      <TableContainer>
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th>Data de nascimento</th>
+              <th>Gênero</th>
+              <th>Email</th>
+              <th>Telefone</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allStudentsArray?.map(student => (
+              <tr key={student.cpf}>
+                <td>{student.code}</td>
+                <td>{student.name}</td>
+                <td>{student.cpf}</td>
+                <td>{student.birth}</td>
+                <td>{student.gender}</td>
+                <td>{student.email}</td>
+                <td>{student.phone}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableContainer>
     </Container>
   );
 };

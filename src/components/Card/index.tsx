@@ -28,7 +28,7 @@ const Card: React.FC<CardProps> = ({
     <Container>
       {Icon && <Icon size={50} />}
       <span>{name}</span>
-      {name && (
+      {cpf && (
         <div className="card-description">
           <p>Código: {code}</p>
           <p>CPF: {cpf}</p>

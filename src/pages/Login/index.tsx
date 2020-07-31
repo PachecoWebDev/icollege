@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { FiLogIn, FiMail, FiLock } from 'react-icons/fi';
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
@@ -22,10 +22,9 @@ interface LoginFormData {
 
 const Login: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
+  const history = useHistory();
 
-  const { login, email } = useAuth();
-
-  console.log(email);
+  const { login } = useAuth();
 
   const handleSubmit = useCallback(
     async (data: LoginFormData) => {
@@ -45,15 +44,17 @@ const Login: React.FC = () => {
 
         login({
           email: data.email,
-          token: data.password,
+          password: data.password,
         });
+
+        history.push('dashboard');
       } catch (err) {
         const errors = getValidationErrors(err);
 
         formRef.current?.setErrors(errors);
       }
     },
-    [login],
+    [login, history],
   );
 
   return (
