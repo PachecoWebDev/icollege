@@ -15,6 +15,8 @@ import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 import * as Yup from 'yup';
 import getValidationErrors from '../../utils/getValidationErrors';
+import { User } from '../../students/users/IUsersRepository';
+import UsersRepository from '../../students/users/fakes/FakeUsersRepository';
 
 import LogoImg from '../../asstes/iCollege.png';
 
@@ -26,16 +28,17 @@ import { Container, Content, GridContainer } from './styles';
 const Logup: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const history = useHistory();
+  const usersRepository = new UsersRepository();
 
   const handleSubmit = useCallback(
-    async (data: object) => {
+    async (data: User) => {
       try {
         formRef.current?.setErrors({});
 
         const schema = Yup.object().shape({
           name: Yup.string().required('Este campo é obrigatório'),
           id: Yup.string().required('Este campo é obrigatório'),
-          cpf: Yup.string().min(11, 'Este campo é obrigatório'),
+          cpf: Yup.string().min(11, 'Este campo deve ter no mínimo 11 dígitos'),
           birth: Yup.string().required('Este campo é obrigatório'),
           sexo: Yup.string().required('Este campo é obrigatório'),
           email: Yup.string()
@@ -52,6 +55,8 @@ const Logup: React.FC = () => {
           abortEarly: false,
         });
 
+        await usersRepository.save(data);
+
         history.push('/');
       } catch (err) {
         const errors = getValidationErrors(err);
@@ -59,7 +64,7 @@ const Logup: React.FC = () => {
         formRef.current?.setErrors(errors);
       }
     },
-    [history],
+    [history, usersRepository],
   );
 
   return (
@@ -72,7 +77,12 @@ const Logup: React.FC = () => {
           <GridContainer>
             <Input name="name" icon={FiUser} placeholder="Nome" />
             <Input name="id" icon={FiHash} placeholder="Código" />
-            <Input name="cpf" icon={FiFileText} placeholder="CPF" />
+            <Input
+              name="cpf"
+              icon={FiFileText}
+              placeholder="CPF"
+              maxLength={11}
+            />
             <Input
               name="birth"
               icon={FiUserCheck}
